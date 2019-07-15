@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="AntDemo" default="junit" basedir="." xmlns:jacoco="antlib:org.jacoco.ant">
+	
+    <!-- =================================================================== -->
+    <!-- 变量设置  -->
+    <!-- =================================================================== -->
+
+    <!-- 源代码src路径 -->
+    <property name="src.path" value="src/icbc"/>
+    <!-- 编译文件class路径 -->
+    <property name="build.path" value="D:\code\antDemo\build"/>
+    <!-- 单元测试代码路径 -->
+    <property name="test.path" value="src/test"/>
+    <!-- lib包路径 -->
+    <property name="lib.path" value="lib"/>    
+    <!-- 生成报告junit4.xml路径 -->
+    <property name="report.path" value="report"/>     
+    <!--测试开始 start  -->   
+	<property name="buildSrc" value="D:\code\antDemo\buildsrc"/>  
+	<property name="projectRoot" value="D:\code"/> 
+	<property name="cdesSrc" value="${projectRoot}/antDemo"/> 
+	<property name="build" value="build"/> 
+	<property name="lib" value="lib"/> 
+	<property name="sysLib" value="sysLib"/> 
+	<property name="ant" value="D:\apache-ant-1.10.6"/> 
+	<property name="cdesLib" value="D:\code\antDemo\lib"/> 
+	<property name="dist" value="dist"/> 
+	<property name="src" value="src"/> 
+	<property name="classpath" location="${build}"/> 
+	
+	 <property name="report" value="D:\junit-report"/>
+	 <property name="report.xml" value="${report}/junit/xml"/>
+	 <property name="report.html" value="${report}/junit/html"/>
+	 <property name="report.jacoco" value="${report}/junit/jacoco"/>
+	
+	 <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+		<classpath path="${ant}/lib/jacocoant.jar" />
+	 </taskdef>
+	<!--测试开始 end  -->   
+    <!-- =================================================================== -->
+    <!-- 设置classpath -->
+    <!-- =================================================================== -->
+	<!--配置运行时的classpath -->
+	<path id="classpath.run">
+		<pathelement path="${classpath}"/>
+		<fileset dir="${sysLib}"></fileset>	
+	</path>
+	<!--配置测试时的classpath -->
+	<path id="classpath.test">
+		<path refid="${classpath.run}"/>
+		<path location="${dist}/lib/test-${DSTAMP}.jar"/>
+	</path>
+   <!-- <path id="compile.path">        
+        <fileset dir="${lib.path}">
+            <include name="**/*.jar"/>
+        </fileset>
+        
+        <pathelement path="${build.path}"/>
+    </path>    --> 
+	<!--任务初始化-->
+	<target name="init">
+		<tstamp/>
+		<delete dir="${buildSrc}"/>
+		<delete dir="${build}"/>
+		<delete dir="${report}"/>
+		<delete dir="${dist}"/>
+		<delete dir="${sysLib}"/>
+		<mkdir dir="${sysLib}"/>
+		<mkdir dir="${build}"/>
+		<mkdir dir="${buildSrc}"/>
+	</target>
+	<target name="copyCDESSrc" depends="init">
+		<copy todir="${buildSrc}">
+			<fileset dir="${cdesSrc}">
+				<include name="**/*.java"/>
+			</fileset>
+		</copy>
+	</target>
+	<!--<target name="copySrc" depends="copyCDESSrc">
+			<copy todir="${buildSrc}" overwrite="true">
+				<fileset dir="${src}">
+					<include name="**/*.java"/>
+				</fileset>
+			</copy>
+	</target>-->
+	<target name="copyLib" depends="copyCDESSrc">
+			<copy todir="${sysLib}" overwrite="true">
+				<fileset dir="${cdesLib}">
+					<include name="*.jar"/>
+				</fileset>
+				<fileset dir="${lib}">
+					<exclude name="ant*.jar"/>
+					<include name="**/*.jar"/>
+				</fileset>
+			</copy>
+	</target>
+
+	<!--配置编译任务-->
+	 <target name="compile" depends="copyLib">
+	        <javac srcdir="${buildSrc}" destdir="${build}" includeAntRuntime="false">
+	        	<!--<compilerarg line="-Denconding UTF-8"/>-->
+	        	<classpath refid="classpath.run"/>
+	        </javac>
+	 	 <!--<javac srcdir="${src.path}" destdir="${build.path}"  classpathref="compile.path" includeantruntime="false"/>
+	 	 <javac srcdir="${test.path}" destdir="${build.path}"  classpathref="compile.path" includeantruntime="false"/>-->
+	  </target>
+	<!-- 打包任务-->
+	<target name="dist">
+		<mkdir dir="${dist}/lib"/>
+		<jar destfile="${dist}/lib/test-${DSTAMP}.jar" basedir="${build}"></jar>
+	</target>
+	
+    <!-- =================================================================== -->
+    <!-- 清除历史编译class -->
+    <!-- =================================================================== -->
+   <!-- <target name="clean" description="clean">
+        <delete dir="${build.path}"/>
+    </target>-->
+
+    <!-- =================================================================== -->
+    <!-- 编译测试文件，初始化目录 -->
+    <!-- =================================================================== -->
+   <!-- <target name="compile" description="compile">
+        <mkdir dir="${build.path}"/>                        
+        <javac srcdir="${src.path}" destdir="${build.path}"  classpathref="compile.path" includeantruntime="false"/>
+        <javac srcdir="${test.path}" destdir="${build.path}"  classpathref="compile.path" includeantruntime="false"/>
+    </target>     --> 
+         
+    <!-- =================================================================== -->
+    <!-- 执行测试案例 -->
+    <!-- =================================================================== -->
+    <target name="junit" depends="compile,dist">
+    	<delete dir="${report.xml}"/>
+    	<delete dir="${report.html}"/>
+    	<delete dir="${report.jacoco}"/>
+    	<mkdir dir="${report.xml}"/>
+    	<mkdir dir="${report.html}"/>
+    	<mkdir dir="${report.jacoco}"/>
+    	<jacoco:coverage destfile="${ant}/lib/jacoco.exec">
+        	<junit printsummary="true" fork="true" forkmode="once" haltonfailure="no">
+             	<classpath refid="classpath.run"/>
+        		<formatter type="xml"/> 
+        		<batchtest fork="yes" todir="${report.xml}">
+        			<fileset dir="${src}">
+        				<exclude name="**/*Test.java"/>
+        				<include name="**/*Test.java"/>
+        			</fileset>
+        		</batchtest>
+            	<test name="test.SimpleDemoTest" todir="${report.path}" fork="true"/>
+         	</junit>
+    	</jacoco:coverage>
+    	<jacoco:report>
+    		<executiondata>
+    			<file file="${ant}/lib/jacoco.exec"/>
+    		</executiondata>
+    		<structure name="jacoco report">
+    			<classfiles>
+    				<fileset dir="${build}"/>
+    			</classfiles>
+    			<sourcefiles encoding="UTF-8">
+    				<fileset dir="${buildSrc}"/>
+    			</sourcefiles>
+    		</structure>
+    		<html destdir="${report.jacoco}"/>
+    	</jacoco:report>
+    	<junitreport todir="${report.html}">
+	    	<fileset dir="${report.xml}">
+	   			 <include name="*.xml"/>
+			</fileset>
+			<report format="frames" todir="${report.html}"/>
+    	</junitreport>
+     </target>
+</project>
