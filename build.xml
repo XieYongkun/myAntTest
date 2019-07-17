@@ -105,7 +105,7 @@
 	 	 <javac srcdir="${test.path}" destdir="${build.path}"  classpathref="compile.path" includeantruntime="false"/>-->
 	  </target>
 	<!-- 打包任务-->
-	<target name="dist">
+	<target name="dist" depends="compile">
 		<mkdir dir="${dist}/lib"/>
 		<jar destfile="${dist}/lib/test-${DSTAMP}.jar" basedir="${build}"></jar>
 	</target>
@@ -137,16 +137,15 @@
     	<mkdir dir="${report.html}"/>
     	<mkdir dir="${report.jacoco}"/>
     	<jacoco:coverage destfile="${ant}/lib/jacoco.exec">
-        	<junit printsummary="true" fork="true" forkmode="once" haltonfailure="no">
+        	<junit printsummary="yes" fork="true" forkmode="once" haltonfailure="no">
              	<classpath refid="classpath.run"/>
         		<formatter type="xml"/> 
         		<batchtest fork="yes" todir="${report.xml}">
         			<fileset dir="${src}">
-        				<exclude name="**/*Test.java"/>
+        				<exclude name="**icbc/*Test.java"/>
         				<include name="**/*Test.java"/>
         			</fileset>
         		</batchtest>
-            	<test name="test.SimpleDemoTest" todir="${report.path}" fork="true"/>
          	</junit>
     	</jacoco:coverage>
     	<jacoco:report>
