@@ -28,7 +28,7 @@
 	<property name="src" value="src"/> 
 	<property name="classpath" location="${build}"/> 
 	
-	 <property name="report" value="${report}"/>
+	 <property name="report" value="report"/>
 	 <property name="report.xml" value="${report}/junit/xml"/>
 	 <property name="report.html" value="${report}/junit/html"/>
 	 <property name="report.jacoco" value="${report}/junit/jacoco"/>
