@@ -19,4 +19,9 @@ public class SimpleDemoTest {
 		         int d = sc.Method(8);
 		         assertEquals(8, d);        
 		     }
+	     @Test
+		    public void MethodTest2() {
+		         int d = sc.Method(9);
+		         assertEquals(9, d);        
+		     }
 }
